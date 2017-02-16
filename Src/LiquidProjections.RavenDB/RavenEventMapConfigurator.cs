@@ -11,11 +11,11 @@ namespace LiquidProjections.RavenDB
         private readonly IEventMap<RavenProjectionContext> map;
         private IProjectionCache cache = new PassthroughCache();
         private string collectionName = typeof(TProjection).Name;
-        private readonly IEnumerable<IRavenChildProjector> children;
+        private readonly IEnumerable<IProjector<RavenProjectionContext>> children;
 
         public RavenEventMapConfigurator(
             IEventMapBuilder<TProjection, string, RavenProjectionContext> mapBuilder,
-            IEnumerable<IRavenChildProjector> children = null)
+            IEnumerable<IProjector<RavenProjectionContext>> children = null)
         {
             if (mapBuilder == null)
             {
@@ -23,7 +23,7 @@ namespace LiquidProjections.RavenDB
             }
 
             map = BuildMap(mapBuilder);
-            this.children = children?.ToList() ?? new List<IRavenChildProjector>();
+            this.children = children?.ToList() ?? new List<IProjector<RavenProjectionContext>>();
         }
 
         public string CollectionName
@@ -204,7 +204,7 @@ namespace LiquidProjections.RavenDB
 
         public async Task ProjectEvent(object anEvent, RavenProjectionContext context)
         {
-            foreach (IRavenChildProjector child in children)
+            foreach (IProjector<RavenProjectionContext> child in children)
             {
                 await child.ProjectEvent(anEvent, context).ConfigureAwait(false);
             }

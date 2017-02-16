@@ -10,7 +10,7 @@ namespace LiquidProjections.RavenDB
     /// <summary>
     /// Projects events to projections of type <typeparamref name="TProjection"/> stored in RavenDB.
     /// Keeps track of its own state stored in RavenDB in RavenCheckpoints collection.
-    /// Can also have child projectors of type <see cref="IRavenChildProjector"/> which project events
+    /// Can also have child projectors of type <see cref="IProjector<>"/> which project events
     /// in the same session just before the parent projector.
     /// Throws <see cref="ProjectionException"/> when it detects errors in the event handlers.
     /// </summary>
@@ -31,12 +31,12 @@ namespace LiquidProjections.RavenDB
         /// but not yet configured how to handle custom actions, projection creation, updating and deletion.
         /// The <see cref="IEventMap{TContext}"/> will be created from it.
         /// </param>
-        /// <param name="children">An optional collection of <see cref="IRavenChildProjector"/> which project events
+        /// <param name="children">An optional collection of <see cref="IProjector<>"/> which project events
         /// in the same session just before the parent projector.</param>
         public RavenProjector(
             Func<IAsyncDocumentSession> sessionFactory,
             IEventMapBuilder<TProjection, string, RavenProjectionContext> mapBuilder,
-            IEnumerable<IRavenChildProjector> children = null)
+            IEnumerable<IProjector<RavenProjectionContext>> children = null)
         {
             if (sessionFactory == null)
             {

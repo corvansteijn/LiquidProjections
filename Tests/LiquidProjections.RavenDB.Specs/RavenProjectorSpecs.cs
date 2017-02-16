@@ -30,7 +30,7 @@ namespace LiquidProjections.RavenDB.Specs
                 });
             }
 
-            protected void StartProjecting(string collectionName = null, IRavenChildProjector[] children = null)
+            protected void StartProjecting(string collectionName = null, IProjector<RavenProjectionContext>[] children = null)
             {
                 WithSubject(_ => new RavenProjector<ProductCatalogEntry>(
                     The<IDocumentStore>().OpenAsyncSession, Events, children)
@@ -1391,7 +1391,7 @@ namespace LiquidProjections.RavenDB.Specs
 
                     var childProjector = new RavenChildProjector<ProductCatalogChildEntry>(childMapBuilder);
 
-                    StartProjecting(children: new IRavenChildProjector[] { childProjector });
+                    StartProjecting(children: new IProjector<RavenProjectionContext>[] { childProjector });
                 });
 
                 When(async () =>

@@ -9,7 +9,7 @@ namespace LiquidProjections.RavenDB
     /// just before the parent projector in the same session.
     /// Throws <see cref="ProjectionException"/> when it detects errors in the event handlers.
     /// </summary>
-    public class RavenChildProjector<TProjection> : IRavenChildProjector
+    public class RavenChildProjector<TProjection> : IProjector<RavenProjectionContext>
         where TProjection : class, IHaveIdentity, new()
     {
         private readonly RavenEventMapConfigurator<TProjection> mapConfigurator;
@@ -23,11 +23,11 @@ namespace LiquidProjections.RavenDB
         /// but not yet configured how to handle custom actions, projection creation, updating and deletion.
         /// The <see cref="IEventMap{TContext}"/> will be created from it.
         /// </param>
-        /// <param name="children">An optional collection of <see cref="IRavenChildProjector"/> which project events
+        /// <param name="children">An optional collection of <see cref="IProjector<>"/> which project events
         /// in the same session just before the parent projector.</param>
         public RavenChildProjector(
             IEventMapBuilder<TProjection, string, RavenProjectionContext> mapBuilder,
-            IEnumerable<IRavenChildProjector> children = null)
+            IEnumerable<IProjector<RavenProjectionContext>> children = null)
         {
             mapConfigurator = new RavenEventMapConfigurator<TProjection>(mapBuilder, children);
         }
@@ -52,7 +52,7 @@ namespace LiquidProjections.RavenDB
             set { mapConfigurator.Cache = value; }
         }
 
-        async Task IRavenChildProjector.ProjectEvent(object anEvent, RavenProjectionContext context)
+        async Task IProjector<RavenProjectionContext>.ProjectEvent(object anEvent, RavenProjectionContext context)
         {
             if (anEvent == null)
             {

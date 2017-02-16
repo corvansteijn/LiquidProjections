@@ -64,7 +64,6 @@
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="IHaveIdentity.cs" />
     <Compile Include="IProjectionCache.cs" />
-    <Compile Include="IRavenChildProjector.cs" />
     <Compile Include="LruProjectionCache.cs" />
     <Compile Include="PassthroughCache.cs" />
     <Compile Include="ProjectorState.cs" />
