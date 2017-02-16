@@ -36,7 +36,7 @@ namespace LiquidProjections.NHibernate.Specs
                 });
             }
 
-            protected void StartProjecting(string stateKey = null, INHibernateChildProjector[] children = null)
+            protected void StartProjecting(string stateKey = null, IProjector<NHibernateProjectionContext>[] children = null)
             {
                 WithSubject(_ => new NHibernateProjector<ProductCatalogEntry, string, ProjectorState>(
                     The<ISessionFactory>().OpenSession, Events, children)
@@ -972,7 +972,7 @@ namespace LiquidProjections.NHibernate.Specs
 
                     var childProjector = new NHibernateChildProjector<ProductCatalogChildEntry, string>(childMapBuilder);
 
-                    StartProjecting(children: new INHibernateChildProjector[] { childProjector });
+                    StartProjecting(children: new IProjector<NHibernateProjectionContext>[] { childProjector });
                 });
 
                 When(async () =>

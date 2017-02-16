@@ -11,7 +11,7 @@ namespace LiquidProjections.NHibernate
     /// Projects events to projections of type <typeparamref name="TProjection"/> with key of type <typeparamref name="TKey"/>
     /// stored in a database accessed via NHibernate.
     /// Keeps track of its own state stored in the database as <typeparamref name="TState"/>.
-    /// Can also have child projectors of type <see cref="INHibernateChildProjector"/> which project events
+    /// Can also have child projectors of type <see cref="IProjector<>"/> which project events
     /// in the same transaction just before the parent projector.
     /// Uses context of type <see cref="NHibernateProjectionContext"/>.
     /// Throws <see cref="ProjectionException"/> when it detects errors in the event handlers.
@@ -35,12 +35,12 @@ namespace LiquidProjections.NHibernate
         /// but not yet configured how to handle custom actions, projection creation, updating and deletion.
         /// The <see cref="IEventMap{TContext}"/> will be created from it.
         /// </param>
-        /// <param name="children">An optional collection of <see cref="INHibernateChildProjector"/> which project events
+        /// <param name="children">An optional collection of <see cref="IProjector<>"/> which project events
         /// in the same transaction just before the parent projector.</param>
         public NHibernateProjector(
             Func<ISession> sessionFactory,
             IEventMapBuilder<TProjection, TKey, NHibernateProjectionContext> mapBuilder,
-            IEnumerable<INHibernateChildProjector> children = null)
+            IEnumerable<IProjector<NHibernateProjectionContext>> children = null)
         {
             this.sessionFactory = sessionFactory;
             mapConfigurator = new NHibernateEventMapConfigurator<TProjection, TKey>(mapBuilder, children);

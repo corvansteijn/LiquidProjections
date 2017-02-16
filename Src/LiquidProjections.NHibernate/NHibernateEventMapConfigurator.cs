@@ -9,11 +9,11 @@ namespace LiquidProjections.NHibernate
         where TProjection : class, IHaveIdentity<TKey>, new()
     {
         private readonly IEventMap<NHibernateProjectionContext> map;
-        private readonly IEnumerable<INHibernateChildProjector> children;
+        private readonly IEnumerable<IProjector<NHibernateProjectionContext>> children;
 
         public NHibernateEventMapConfigurator(
             IEventMapBuilder<TProjection, TKey, NHibernateProjectionContext> mapBuilder,
-            IEnumerable<INHibernateChildProjector> children = null)
+            IEnumerable<IProjector<NHibernateProjectionContext>> children = null)
         {
             if (mapBuilder == null)
             {
@@ -21,7 +21,7 @@ namespace LiquidProjections.NHibernate
             }
 
             map = BuildMap(mapBuilder);
-            this.children = children?.ToList() ?? new List<INHibernateChildProjector>();
+            this.children = children?.ToList() ?? new List<IProjector<NHibernateProjectionContext>>();
         }
 
         private IEventMap<NHibernateProjectionContext> BuildMap(
@@ -135,7 +135,7 @@ namespace LiquidProjections.NHibernate
 
         public async Task ProjectEvent(object anEvent, NHibernateProjectionContext context)
         {
-            foreach (INHibernateChildProjector child in children)
+            foreach (IProjector<NHibernateProjectionContext> child in children)
             {
                 await child.ProjectEvent(anEvent, context).ConfigureAwait(false);
             }

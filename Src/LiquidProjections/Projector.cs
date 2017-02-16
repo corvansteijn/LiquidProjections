@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace LiquidProjections
 {
-    public class Projector
+    public class Projector : IProjector<ProjectionContext>
     {
         private readonly IEventMap<ProjectionContext> map;
-        private readonly IReadOnlyList<Projector> children;
+        private readonly IReadOnlyList<IProjector<ProjectionContext>> children;
 
-        public Projector(IEventMapBuilder<ProjectionContext> eventMapBuilder, IEnumerable<Projector> children = null)
+        public Projector(IEventMapBuilder<ProjectionContext> eventMapBuilder, IEnumerable<IProjector<ProjectionContext>> children = null)
         {
             if (eventMapBuilder == null)
             {
@@ -19,7 +19,7 @@ namespace LiquidProjections
 
             SetupHandlers(eventMapBuilder);
             map = eventMapBuilder.Build();
-            this.children = children?.ToList() ?? new List<Projector>();
+            this.children = children?.ToList() ?? new List<IProjector<ProjectionContext>>();
 
             if (this.children.Contains(null))
             {
@@ -84,9 +84,9 @@ namespace LiquidProjections
             }
         }
 
-        private async Task ProjectEvent(object anEvent, ProjectionContext context)
+        public async Task ProjectEvent(object anEvent, ProjectionContext context)
         {
-            foreach (Projector child in children)
+            foreach (IProjector<ProjectionContext> child in children)
             {
                 await child.ProjectEvent(anEvent, context);
             }
