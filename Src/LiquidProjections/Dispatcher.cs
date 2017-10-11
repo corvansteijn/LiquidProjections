@@ -12,10 +12,18 @@ namespace LiquidProjections
     public class Dispatcher
     {
         private readonly CreateSubscription createSubscription;
+        private Func<long?> getLastProcessedCheckpoint;
 
         public Dispatcher(CreateSubscription createSubscription)
         {
             this.createSubscription = createSubscription;
+        }
+
+        public IDisposable Subscribe(Func<long?> getLastProcessedCheckpoint,
+            Func<IReadOnlyList<Transaction>, SubscriptionInfo, Task> handler,
+            SubscriptionOptions options = null))
+        {
+            this.getLastProcessedCheckpoint = getLastProcessedCheckpoint;
         }
 
         public IDisposable Subscribe(long? lastProcessedCheckpoint,

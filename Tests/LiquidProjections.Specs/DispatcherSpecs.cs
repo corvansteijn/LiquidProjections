@@ -69,6 +69,7 @@ namespace LiquidProjections.Specs
                 The<FakeLogProvider>().Exception.Should().Be(The<ProjectionException>());
             }
         }
+        
         public class When_a_projector_throws_an_exception_but_requires_retrying : GivenSubject<Dispatcher>
         {
             private int attempts;
@@ -120,6 +121,74 @@ namespace LiquidProjections.Specs
                 The<FakeLogProvider>().Exception.Should().BeNull();
             }
         }
+        
+        public class When_a_projector_throws_an_exception_but_requires_retrying_the_last_part_of_the_batch : GivenSubject<Dispatcher>
+        {
+            private readonly List<string> handledTransactions = new List<string>();
+
+            public When_a_projector_throws_an_exception_but_requires_retrying_the_last_part_of_the_batch()
+            {
+                Given(() =>
+                {
+                    UseThe(new MemoryEventSource(2));
+                    WithSubject(_ => new Dispatcher(The<MemoryEventSource>().Subscribe));
+
+                    LogProvider.SetCurrentLogProvider(UseThe(new FakeLogProvider()));
+
+                    UseThe(new ProjectionException("Some message."));
+
+                    Subject.ExceptionHandler = (exc, attempts, subscription) =>
+                    {
+                        return Task.FromResult(ExceptionResolution.Retry);
+                    };
+
+                    bool hasFailed = false;
+                    Subject.Subscribe(1, (transactions, info) =>
+                    {
+                        foreach (Transaction transaction in transactions)
+                        {
+                            if ((!hasFailed) && transaction.Id == "Failing transaction")
+                            {
+                                hasFailed = true;
+                                throw The<ProjectionException>();
+                            }
+
+                            handledTransactions.Add(transaction.Id);
+                        }
+
+                        return Task.FromResult(0);
+                    });
+                });
+
+                When(() =>
+                {
+                    return The<MemoryEventSource>().Write(new Transaction[]
+                    {
+                        new Transaction
+                        {
+                            Checkpoint = 2,
+                            Id = "First transaction"
+                        },
+                        new Transaction
+                        {
+                            Checkpoint = 3,
+                            Id = "Failing transaction"
+                        }
+                    });
+                });
+            }
+
+            [Fact]
+            public void It_should_retry_only_failed_transactions()
+            {
+                handledTransactions.Should().BeEquivalentTo(new[]
+                {
+                    "First transaction",
+                    "Failing transaction"
+                });
+            }
+        }
+        
         public class When_a_projector_throws_an_exception_and_the_exception_handler_has_a_delay_and_the_subscription_is_disposed :
             GivenSubject<Dispatcher>
         {
